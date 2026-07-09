@@ -1,15 +1,22 @@
 const damian = document.getElementById('ascii-damian');
 const handle = document.getElementById('ascii-handle');
 const wrapper = document.getElementById('asciiWrapper');
+const main = document.querySelector('.main');
 const canvas = document.getElementById('rain');
 const ctx = canvas.getContext('2d');
 const CHARS = '|/\\!:;.,`\'"-_~^'.split('');
 const FONT_SIZE = 14;
 const SPEED_MIN = 0.3;
 const SPEED_MAX = 0.7;
+const MAX_TILT = 7;
 let drops = [];
 
 let showingDamian = true;
+let tiltFrame = null;
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
 
 function createDrop(columnHeight, startInView = false) {
     return {
@@ -46,6 +53,31 @@ function resize() {
     const cols = Math.floor(canvas.width / FONT_SIZE);
     const rows = canvas.height / FONT_SIZE;
     drops = Array.from({ length: cols }, () => createDrop(rows, true));
+}
+
+function setTilt(event) {
+    if (!main || tiltFrame) return;
+
+    tiltFrame = requestAnimationFrame(() => {
+        const rect = main.getBoundingClientRect();
+        const x = clamp((event.clientX - rect.left) / rect.width - 0.5, -0.5, 0.5);
+        const y = clamp((event.clientY - rect.top) / rect.height - 0.5, -0.5, 0.5);
+
+        main.style.setProperty('--tilt-x', `${(-y * MAX_TILT).toFixed(2)}deg`);
+        main.style.setProperty('--tilt-y', `${(x * MAX_TILT).toFixed(2)}deg`);
+        main.style.setProperty('--glow-x', `${((x + 0.5) * 100).toFixed(1)}%`);
+        main.style.setProperty('--glow-y', `${((y + 0.5) * 100).toFixed(1)}%`);
+        tiltFrame = null;
+    });
+}
+
+function resetTilt() {
+    if (!main) return;
+
+    main.style.setProperty('--tilt-x', '0deg');
+    main.style.setProperty('--tilt-y', '0deg');
+    main.style.setProperty('--glow-x', '50%');
+    main.style.setProperty('--glow-y', '35%');
 }
 
 function draw() {
@@ -85,5 +117,9 @@ function draw() {
 updateHeight();
 setTimeout(() => { updateHeight(); setInterval(toggle, 3000); }, 500);
 window.addEventListener('resize', resize);
+if (window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    window.addEventListener('pointermove', setTilt);
+    window.addEventListener('pointerleave', resetTilt);
+}
 resize();
 draw();

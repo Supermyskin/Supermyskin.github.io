@@ -15,6 +15,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    perspective: 1200px;
 }
 
 canvas {
@@ -29,6 +30,10 @@ canvas {
 }
 
 .main {
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
+    --glow-x: 50%;
+    --glow-y: 35%;
     width: 100%;
     max-width: 860px;
     display: flex;
@@ -37,6 +42,55 @@ canvas {
     text-align: left;
     position: relative;
     z-index: 1;
+    padding: clamp(3.1rem, 5vw, 4rem) clamp(1.2rem, 4vw, 2.4rem) clamp(1.2rem, 4vw, 2.4rem);
+    border: 1px solid #242424;
+    background:
+        radial-gradient(
+            circle at var(--glow-x) var(--glow-y),
+            rgba(255, 255, 255, 0.075),
+            transparent 34%
+        ),
+        linear-gradient(180deg, rgba(22, 22, 22, 0.92), rgba(8, 8, 8, 0.96));
+    box-shadow:
+        0 28px 80px rgba(0, 0, 0, 0.58),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+    transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+    transform-style: preserve-3d;
+    transition: transform 0.14s ease-out, box-shadow 0.14s ease-out;
+    will-change: transform;
+}
+
+.main::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    border-bottom: 1px solid #222;
+    background:
+        radial-gradient(circle at 17px 15px, #777 0 3px, transparent 3.5px),
+        radial-gradient(circle at 32px 15px, #4f4f4f 0 3px, transparent 3.5px),
+        radial-gradient(circle at 47px 15px, #303030 0 3px, transparent 3.5px),
+        linear-gradient(180deg, rgba(28, 28, 28, 0.92), rgba(12, 12, 12, 0.92));
+    pointer-events: none;
+}
+
+.main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent 0,
+            transparent 9px,
+            rgba(255, 255, 255, 0.025) 10px
+        );
+    opacity: 0.45;
+    mix-blend-mode: screen;
 }
 
 .ascii-wrapper {
@@ -196,6 +250,7 @@ canvas {
 .nav-block {
     margin-top: 1.6rem;
     border-top: 1px solid #222;
+    width: 100%;
     padding-top: 1.2rem;
     display: flex;
     gap: 2.5rem;
@@ -302,6 +357,11 @@ canvas {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
+    .main {
+        transform: none;
+        transition: none;
+    }
 
     .ascii-wrapper,
     .prompt-block,
